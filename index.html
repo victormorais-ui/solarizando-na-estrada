@@ -226,61 +226,6 @@
       margin: 0 auto;
     }
 
-    /* ─── CONFIG SHEETS ─────────────────────────────── */
-    .config-sheets {
-      background: white;
-      border: 1.5px solid var(--cinza-borda);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .config-sheets p { font-size: 13px; color: var(--texto-muted); font-weight: 500; flex-shrink: 0; }
-    .config-sheets input {
-      flex: 1;
-      min-width: 240px;
-      height: 36px;
-      border: 1.5px solid var(--cinza-borda);
-      border-radius: 8px;
-      padding: 0 10px;
-      font-family: monospace;
-      font-size: 12px;
-      color: var(--texto);
-      outline: none;
-      background: var(--cinza-bg);
-    }
-    .config-sheets input:focus { border-color: var(--laranja); background: white; }
-    .btn-conectar {
-      height: 36px;
-      background: var(--laranja);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0 16px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s;
-    }
-    .btn-conectar:hover { background: var(--laranja-esc); }
-    .badge-conectado {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--verde-ok);
-      background: var(--verde-bg);
-      border: 1px solid var(--verde-borda);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-weight: 600;
-    }
-
     /* ─── CABEÇALHO DA SEÇÃO ─────────────────────────── */
     .sec-header {
       margin-bottom: 20px;
@@ -618,6 +563,7 @@
       transition: border-color 0.15s, background 0.15s;
     }
     .campo input:focus { border-color: var(--laranja); background: white; }
+    .obrig { color: var(--laranja); font-weight: 700; }
     .modal-footer {
       display: flex;
       justify-content: flex-end;
@@ -753,12 +699,6 @@
   </div>
 
   <div class="conteudo">
-    <div id="config-area" class="config-sheets">
-      <p>Planilha Google Sheets:</p>
-      <input type="text" id="sheets-id" placeholder="Cole aqui o ID da planilha (da URL do Google Sheets)" />
-      <button class="btn-conectar" onclick="conectar()">Conectar</button>
-    </div>
-
     <div class="sec-header">
       <p class="sec-titulo">Selecione a edição</p>
       <p class="sec-sub">Clique na cidade para gerenciar o check-in dos inscritos</p>
@@ -803,10 +743,9 @@
             <tr>
               <th>Nome completo</th>
               <th>E-mail</th>
-              <th>WhatsApp</th>
+              <th>Telefone</th>
               <th>CNPJ</th>
               <th>Razão social</th>
-              <th>Consultor</th>
               <th style="text-align:center;">Check-in</th>
             </tr>
           </thead>
@@ -825,11 +764,11 @@
       Adicionar inscrito
     </p>
     <div class="mgrid">
-      <div class="campo full"><label>Nome completo</label><input id="f-nome" type="text" placeholder="Ex: João Silva" /></div>
-      <div class="campo full"><label>E-mail</label><input id="f-email" type="email" placeholder="joao@integradora.com.br" /></div>
-      <div class="campo"><label>WhatsApp</label><input id="f-whats" type="text" placeholder="86 99999-0000" /></div>
-      <div class="campo"><label>CNPJ</label><input id="f-cnpj" type="text" placeholder="00.000.000/0001-00" maxlength="18" oninput="mascaraCNPJ(this)" /></div>
-      <div class="campo full"><label>Razão social</label><input id="f-razao" type="text" placeholder="Nome da empresa" /></div>
+      <div class="campo full"><label>Nome completo <span class="obrig">*</span></label><input id="f-nome" type="text" placeholder="JOÃO SILVA" oninput="maiusculo(this)" /></div>
+      <div class="campo full"><label>E-mail <span class="obrig">*</span></label><input id="f-email" type="email" placeholder="joao@integradora.com.br" /></div>
+      <div class="campo"><label>Telefone <span class="obrig">*</span></label><input id="f-tel" type="text" placeholder="(86) 99999-0000" oninput="mascaraTel(this)" maxlength="15" /></div>
+      <div class="campo"><label>CNPJ <span class="obrig">*</span></label><input id="f-cnpj" type="text" placeholder="00.000.000/0001-00" maxlength="18" oninput="mascaraCNPJ(this)" /></div>
+      <div class="campo full"><label>Razão social <span class="obrig">*</span></label><input id="f-razao" type="text" placeholder="NOME DA EMPRESA" oninput="maiusculo(this)" /></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
@@ -843,32 +782,54 @@
 <script>
 // ─── DADOS DEMO ────────────────────────────────────────────
 const EVENTOS = [
-  { id:'SOL20250717-1', cidade:'Recife',            uf:'PE', regiao:'Nordeste', data:'17/07/2025', total:312,  presentes:0 },
-  { id:'SOL20250918-1', cidade:'Natal',             uf:'RN', regiao:'Nordeste', data:'18/09/2025', total:278,  presentes:0 },
-  { id:'SOL20250925-1', cidade:'Belém',             uf:'PA', regiao:'Norte',    data:'25/09/2025', total:305,  presentes:1 },
-  { id:'SOL20251009-1', cidade:'Juazeiro do Norte', uf:'CE', regiao:'Nordeste', data:'09/10/2025', total:198,  presentes:0 },
-  { id:'SOL20251023-1', cidade:'Salvador',          uf:'BA', regiao:'Nordeste', data:'23/10/2025', total:421,  presentes:0 },
-  { id:'SOL20251113-1', cidade:'São Luís',          uf:'MA', regiao:'Nordeste', data:'13/11/2025', total:244,  presentes:0 },
-  { id:'SOL20251204-1', cidade:'Teresina',          uf:'PI', regiao:'Nordeste', data:'04/12/2025', total:1592, presentes:1 },
+  { id:'SOL20250717-1', cidade:'RECIFE',              uf:'PE', estado:'PERNAMBUCO',        regiao:'NORDESTE', data:'17/07/2025', total:312,  presentes:0 },
+  { id:'SOL20250918-1', cidade:'NATAL',               uf:'RN', estado:'RIO GRANDE DO NORTE',regiao:'NORDESTE',data:'18/09/2025', total:278,  presentes:0 },
+  { id:'SOL20250925-1', cidade:'BELÉM',               uf:'PA', estado:'PARÁ',              regiao:'NORTE',    data:'25/09/2025', total:305,  presentes:1 },
+  { id:'SOL20251009-1', cidade:'JUAZEIRO DO NORTE',   uf:'CE', estado:'CEARÁ',             regiao:'NORDESTE', data:'09/10/2025', total:198,  presentes:0 },
+  { id:'SOL20251023-1', cidade:'SALVADOR',            uf:'BA', estado:'BAHIA',             regiao:'NORDESTE', data:'23/10/2025', total:421,  presentes:0 },
+  { id:'SOL20251113-1', cidade:'SÃO LUÍS',            uf:'MA', estado:'MARANHÃO',          regiao:'NORDESTE', data:'13/11/2025', total:244,  presentes:0 },
+  { id:'SOL20251204-1', cidade:'TERESINA',            uf:'PI', estado:'PIAUÍ',             regiao:'NORDESTE', data:'04/12/2025', total:1592, presentes:1 },
+  { id:'SOL20260305-1', cidade:'FEIRA DE SANTANA',    uf:'BA', estado:'BAHIA',             regiao:'NORDESTE', data:'05/03/2026', total:0,    presentes:0 },
+  { id:'SOL20260319-1', cidade:'PETROLINA',           uf:'PE', estado:'PERNAMBUCO',        regiao:'NORDESTE', data:'19/03/2026', total:0,    presentes:0 },
+  { id:'SOL20260409-1', cidade:'IMPERATRIZ',          uf:'MA', estado:'MARANHÃO',          regiao:'NORDESTE', data:'09/04/2026', total:0,    presentes:0 },
+  { id:'SOL20260507-1', cidade:'SANTARÉM',            uf:'PA', estado:'PARÁ',              regiao:'NORTE',    data:'07/05/2026', total:0,    presentes:0 },
+  { id:'SOL20260521-1', cidade:'JOÃO PESSOA',         uf:'PB', estado:'PARAÍBA',           regiao:'NORDESTE', data:'21/05/2026', total:0,    presentes:0 },
+  { id:'SOL20260611-1', cidade:'ARACAJU',             uf:'SE', estado:'SERGIPE',           regiao:'NORDESTE', data:'11/06/2026', total:0,    presentes:0 },
+  { id:'SOL20260618-1', cidade:'MACEIÓ',              uf:'AL', estado:'ALAGOAS',           regiao:'NORDESTE', data:'18/06/2026', total:0,    presentes:0 },
+  { id:'SOL20260723-1', cidade:'MARABÁ',              uf:'PA', estado:'PARÁ',              regiao:'NORTE',    data:'23/07/2026', total:0,    presentes:0 },
+  { id:'SOL20260917-1', cidade:'MANAUS',              uf:'AM', estado:'AMAZONAS',          regiao:'NORTE',    data:'17/09/2026', total:0,    presentes:0 },
+  { id:'SOL20260924-1', cidade:'VITÓRIA DA CONQUISTA',uf:'BA', estado:'BAHIA',             regiao:'NORDESTE', data:'24/09/2026', total:0,    presentes:0 },
+  { id:'SOL20261008-1', cidade:'CARUARU',             uf:'PE', estado:'PERNAMBUCO',        regiao:'NORDESTE', data:'08/10/2026', total:0,    presentes:0 },
+  { id:'SOL20261022-1', cidade:'MOSSORÓ',             uf:'RN', estado:'RIO GRANDE DO NORTE',regiao:'NORDESTE',data:'22/10/2026', total:0,    presentes:0 },
+  { id:'SOL20261112-1', cidade:'PALMAS',              uf:'TO', estado:'TOCANTINS',         regiao:'NORTE',    data:'12/11/2026', total:0,    presentes:0 },
+  { id:'SOL20261210-1', cidade:'MACAPÁ',              uf:'AP', estado:'AMAPÁ',             regiao:'NORTE',    data:'10/12/2026', total:0,    presentes:0 },
 ];
 
 const INSCRITOS_BASE = [
-  { id:1,  nome:'Alexandre Monteiro Lima',           email:'artsolsolar@gmail.com',          whats:'86998878430', cnpj:'52832673000101', razao:'Alexandre Monteiro Lima',            consultor:'ISIS CRISTINE',    checkin:'SIM' },
-  { id:2,  nome:'Allex Brenno Páscoa Soares',        email:'a3engenharia.solar@gmail.com',    whats:'86994329010', cnpj:'31145743000183', razao:'Páscoa Engenharia LTDA',             consultor:'DIANA PARENTE',    checkin:'NÃO' },
-  { id:3,  nome:'Bernardino Antonio Fernandes Neto', email:'bfenergiasolar.pi@gmail.com',     whats:'86995357787', cnpj:'40644336000101', razao:'B A FERNANDES NETO LTDA',            consultor:'LUCAS TADEU',      checkin:'NÃO' },
-  { id:4,  nome:'Wellington Ramos Silva',            email:'energiasolarteresina@gmail.com',  whats:'86981659927', cnpj:'44317423000105', razao:'Wellington Ramos Silva',             consultor:'DIANA PARENTE',    checkin:'NÃO' },
-  { id:5,  nome:'Alysson Felipe Anatalio Silva',     email:'eng.felipeanatalio@hotmail.com',  whats:'86999145528', cnpj:'45273701000132', razao:'REI DA ENERGIA SOLAR',              consultor:'DIANA PARENTE',    checkin:'NÃO' },
-  { id:6,  nome:'Edvaldo Joaquim da Paixão',         email:'edvaldosaojoao@hotmail.com',      whats:'86999421628', cnpj:'47485315000130', razao:'Edvaldo Joaquim da Paixão',         consultor:'LEVI DA SILVA',    checkin:'NÃO' },
-  { id:7,  nome:'Francisco Carlos da Silva Souza',   email:'hackengenharia@gmail.com',        whats:'86995182156', cnpj:'33611588000179', razao:'Hack Engenharia Ltda',              consultor:'ISIS CRISTINE',    checkin:'NÃO' },
-  { id:8,  nome:'Thiago Veloso Magalhães',           email:'thiagumagalhaes@gmail.com',       whats:'86999161114', cnpj:'05647004000180', razao:'Vale do Parnaíba Energias',         consultor:'NÃO TENHO',       checkin:'NÃO' },
-  { id:9,  nome:'Leandro Gomes de Sousa',            email:'leandro-desousa@hotmail.com',     whats:'86999466252', cnpj:'37287390000132', razao:'GSprojetos',                        consultor:'JEFFERSON PASSOS', checkin:'NÃO' },
-  { id:10, nome:'Fábio Alves Ferreira',              email:'fabioalves@dfhenerg.com',         whats:'86998493940', cnpj:'40565505000118', razao:'DFH ENERGIA',                       consultor:'WALESKA ALMEIDA',  checkin:'NÃO' },
-  { id:11, nome:'Cláudio Barros',                    email:'claudio@barrosenerg.com',         whats:'86999597061', cnpj:'49619625000125', razao:'Barros Energia e Consultoria Ltda', consultor:'LEVI DA SILVA',    checkin:'NÃO' },
-  { id:12, nome:'Karina Borges',                     email:'kbsnutri@gmail.com',              whats:'86988101028', cnpj:'46633224000131', razao:'ACS ENERGY E CONSTRUÇÃO',           consultor:'DIANA PARENTE',    checkin:'NÃO' },
-  { id:13, nome:'Daiele de Sousa Viana',             email:'daielevs@gmail.com',              whats:'86998180592', cnpj:'45186617000181', razao:'Nossolar Engenharia',               consultor:'ITALO CHESLON',    checkin:'NÃO' },
-  { id:14, nome:'MANOEL FEITOSA COSTA NETO',         email:'manoelfcn@yahoo.com',             whats:'86988224333', cnpj:'34206019000100', razao:'MANOEL FEITOSA COSTA NETO',        consultor:'TALLYS LEAL',      checkin:'NÃO' },
-  { id:15, nome:'Samuel Ferreira de Sousa',          email:'terrasolar-the@hotmail.com',      whats:'86995360646', cnpj:'18254559000103', razao:'Samuel Ferreira de Sousa',          consultor:'ANDRÉ LUÍZ',      checkin:'NÃO' },
+  { id_evento:'SOL20251204-1', id:1,  nome:'ALEXANDRE MONTEIRO LIMA',           email:'artsolsolar@gmail.com',         tel:'86998878430', cnpj:'52832673000101', razao:'ALEXANDRE MONTEIRO LIMA',            checkin:'SIM', checkin_por:'ISIS.CRISTINE@SOUENERGY.COM.BR',  checkin_data:'04/12/2025 08:31' },
+  { id_evento:'SOL20251204-1', id:2,  nome:'ALLEX BRENNO PÁSCOA SOARES',        email:'a3engenharia.solar@gmail.com',   tel:'86994329010', cnpj:'31145743000183', razao:'PÁSCOA ENGENHARIA LTDA',             checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:3,  nome:'BERNARDINO ANTONIO FERNANDES NETO', email:'bfenergiasolar.pi@gmail.com',    tel:'86995357787', cnpj:'40644336000101', razao:'B A FERNANDES NETO LTDA',            checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:4,  nome:'WELLINGTON RAMOS SILVA',            email:'energiasolarteresina@gmail.com', tel:'86981659927', cnpj:'44317423000105', razao:'WELLINGTON RAMOS SILVA',             checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:5,  nome:'ALYSSON FELIPE ANATALIO SILVA',     email:'eng.felipeanatalio@hotmail.com', tel:'86999145528', cnpj:'45273701000132', razao:'REI DA ENERGIA SOLAR',              checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:6,  nome:'EDVALDO JOAQUIM DA PAIXÃO',         email:'edvaldosaojoao@hotmail.com',     tel:'86999421628', cnpj:'47485315000130', razao:'EDVALDO JOAQUIM DA PAIXÃO',         checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:7,  nome:'FRANCISCO CARLOS DA SILVA SOUZA',   email:'hackengenharia@gmail.com',       tel:'86995182156', cnpj:'33611588000179', razao:'HACK ENGENHARIA LTDA',              checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:8,  nome:'THIAGO VELOSO MAGALHÃES',           email:'thiagumagalhaes@gmail.com',      tel:'86999161114', cnpj:'05647004000180', razao:'VALE DO PARNAÍBA ENERGIAS',         checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:9,  nome:'LEANDRO GOMES DE SOUSA',            email:'leandro-desousa@hotmail.com',    tel:'86999466252', cnpj:'37287390000132', razao:'GSPROJETOS',                        checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:10, nome:'FÁBIO ALVES FERREIRA',              email:'fabioalves@dfhenerg.com',        tel:'86998493940', cnpj:'40565505000118', razao:'DFH ENERGIA',                       checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:11, nome:'CLÁUDIO BARROS',                    email:'claudio@barrosenerg.com',        tel:'86999597061', cnpj:'49619625000125', razao:'BARROS ENERGIA E CONSULTORIA LTDA', checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:12, nome:'KARINA BORGES',                     email:'kbsnutri@gmail.com',             tel:'86988101028', cnpj:'46633224000131', razao:'ACS ENERGY E CONSTRUÇÃO',           checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:13, nome:'DAIELE DE SOUSA VIANA',             email:'daielevs@gmail.com',             tel:'86998180592', cnpj:'45186617000181', razao:'NOSSOLAR ENGENHARIA',               checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:14, nome:'MANOEL FEITOSA COSTA NETO',         email:'manoelfcn@yahoo.com',            tel:'86988224333', cnpj:'34206019000100', razao:'MANOEL FEITOSA COSTA NETO',         checkin:'NÃO', checkin_por:'', checkin_data:'' },
+  { id_evento:'SOL20251204-1', id:15, nome:'SAMUEL FERREIRA DE SOUSA',          email:'terrasolar-the@hotmail.com',     tel:'86995360646', cnpj:'18254559000103', razao:'SAMUEL FERREIRA DE SOUSA',          checkin:'NÃO', checkin_por:'', checkin_data:'' },
 ];
+
+// ─── CONFIGURAÇÃO DA PLANILHA (fixo) ──────────────────────
+const SHEETS_ID  = '17Lf4xrRXb7BJrBmNBHpdxazT849KfcjxycW0CIT6Tvk';
+const GID_EVENTOS    = '2480586';
+const GID_INSCRITOS  = '1699299530';
+// URL base para leitura pública via CSV export
+const csvUrl = (gid) =>
+  `https://docs.google.com/spreadsheets/d/${SHEETS_ID}/export?format=csv&gid=${gid}`;
 
 // ─── ESTADO ────────────────────────────────────────────────
 let app = {
@@ -882,11 +843,6 @@ function login() {
   // Em produção: substituir por OAuth Google real
   app.usuario = 'consultor@souenergy.com.br';
   document.getElementById('usuario-display').textContent = app.usuario;
-  const sid = localStorage.getItem('sou_sid');
-  if (sid) {
-    app.sheetsId = sid;
-    marcarConectado(sid);
-  }
   mostrar('tela-eventos');
   renderEventos();
 }
@@ -905,34 +861,6 @@ function mostrar(id) {
 function voltar() {
   mostrar('tela-eventos');
   renderEventos();
-}
-
-// ─── SHEETS ────────────────────────────────────────────────
-function conectar() {
-  const v = document.getElementById('sheets-id').value.trim();
-  if (!v) return;
-  localStorage.setItem('sou_sid', v);
-  marcarConectado(v);
-  toast('Planilha conectada com sucesso!', 'ok');
-  renderEventos();
-}
-
-function marcarConectado(id) {
-  document.getElementById('config-area').innerHTML = `
-    <span class="badge-conectado">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-      Planilha conectada
-    </span>
-    <span style="font-size:11px;color:var(--texto-muted);font-family:monospace;">${id.slice(0,32)}…</span>
-    <button onclick="trocarPlanilha()" style="font-size:11px;color:var(--texto-muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit;">Trocar</button>`;
-}
-
-function trocarPlanilha() {
-  localStorage.removeItem('sou_sid');
-  document.getElementById('config-area').innerHTML = `
-    <p>Planilha Google Sheets:</p>
-    <input type="text" id="sheets-id" placeholder="Cole aqui o ID da planilha" />
-    <button class="btn-conectar" onclick="conectar()">Conectar</button>`;
 }
 
 // ─── EVENTOS ───────────────────────────────────────────────
@@ -972,7 +900,11 @@ function renderEventos() {
 
 function abrirEvento(id) {
   app.evento = EVENTOS.find(e => e.id === id);
-  app.inscritos = JSON.parse(JSON.stringify(INSCRITOS_BASE));
+  // Filtra só os inscritos do evento selecionado pelo ID
+  // Quando integrado ao Sheets, essa lista virá da planilha filtrada por ID_Evento
+  app.inscritos = JSON.parse(JSON.stringify(
+    INSCRITOS_BASE.filter(i => i.id_evento === id)
+  ));
   document.getElementById('evento-header').textContent =
     `Solarizando na Estrada — ${app.evento.cidade}/${app.evento.uf}`;
   document.getElementById('busca').value = '';
@@ -989,25 +921,23 @@ function filtrar() {
     i.nome.toLowerCase().includes(q) ||
     i.email.toLowerCase().includes(q) ||
     i.cnpj.includes(q.replace(/\D/g,'')) ||
-    i.razao.toLowerCase().includes(q) ||
-    (i.consultor||'').toLowerCase().includes(q)
+    i.razao.toLowerCase().includes(q)
   ));
 }
 
 function renderTabela(lista) {
   const tb = document.getElementById('tbody');
   if (!lista.length) {
-    tb.innerHTML = '<tr class="vazio"><td colspan="7">Nenhum inscrito encontrado para essa busca.</td></tr>';
+    tb.innerHTML = '<tr class="vazio"><td colspan="6">Nenhum inscrito encontrado para essa busca.</td></tr>';
     return;
   }
   tb.innerHTML = lista.map(i => `
     <tr class="${i.checkin==='SIM'?'presente':''}" id="r${i.id}">
       <td class="nome">${i.nome}</td>
       <td class="sec">${i.email}</td>
-      <td class="sec">${i.whats||'—'}</td>
+      <td class="sec">${i.tel||'—'}</td>
       <td class="sec">${fmtCNPJ(i.cnpj)}</td>
       <td class="sec">${i.razao}</td>
-      <td class="sec">${i.consultor}</td>
       <td class="check-cell">
         <button class="check-btn ${i.checkin==='SIM'?'on':''}" onclick="toggle(${i.id})"
           title="${i.checkin==='SIM'?'Desfazer check-in':'Confirmar presença'}">
@@ -1020,7 +950,17 @@ function renderTabela(lista) {
 function toggle(id) {
   const i = app.inscritos.find(x => x.id === id);
   if (!i) return;
-  i.checkin = i.checkin === 'SIM' ? 'NÃO' : 'SIM';
+  const agora = new Date();
+  const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  if (i.checkin === 'SIM') {
+    i.checkin = 'NÃO';
+    i.checkin_por = '';
+    i.checkin_data = '';
+  } else {
+    i.checkin = 'SIM';
+    i.checkin_por = (app.usuario || '').toUpperCase();
+    i.checkin_data = dataHora;
+  }
   filtrar();
   atualizarStats();
   toast(i.checkin === 'SIM' ? `✓ Check-in confirmado: ${i.nome}` : `Check-in desfeito: ${i.nome}`,
@@ -1041,13 +981,28 @@ function atualizarStats() {
 
 // ─── MODAL ADICIONAR ───────────────────────────────────────
 function abrirModal() {
-  ['f-nome','f-email','f-whats','f-cnpj','f-razao'].forEach(id => document.getElementById(id).value = '');
+  ['f-nome','f-email','f-tel','f-cnpj','f-razao'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('modal').classList.add('aberto');
   setTimeout(() => document.getElementById('f-nome').focus(), 60);
 }
 
 function fecharModal() {
   document.getElementById('modal').classList.remove('aberto');
+}
+
+function maiusculo(el) {
+  const pos = el.selectionStart;
+  el.value = el.value.toUpperCase();
+  el.setSelectionRange(pos, pos);
+}
+
+function mascaraTel(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,11);
+  if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/,'($1) $2-$3');
+  else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4,5})(\d{0,4})$/,'($1) $2-$3');
+  else if (v.length > 2) v = v.replace(/^(\d{2})(\d+)$/,'($1) $2');
+  else if (v.length > 0) v = '(' + v;
+  el.value = v;
 }
 
 function mascaraCNPJ(el) {
@@ -1060,22 +1015,35 @@ function mascaraCNPJ(el) {
 }
 
 function salvar() {
-  const nome  = document.getElementById('f-nome').value.trim();
-  const email = document.getElementById('f-email').value.trim();
-  const whats = document.getElementById('f-whats').value.trim();
+  const nome  = document.getElementById('f-nome').value.trim().toUpperCase();
+  const email = document.getElementById('f-email').value.trim().toLowerCase();
+  const tel   = document.getElementById('f-tel').value.trim();
   const cnpj  = document.getElementById('f-cnpj').value.trim();
-  const razao = document.getElementById('f-razao').value.trim();
-  if (!nome || !email || !cnpj || !razao) {
-    toast('Preencha nome, e-mail, CNPJ e razão social.', 'err');
+  const razao = document.getElementById('f-razao').value.trim().toUpperCase();
+
+  if (!nome || !email || !tel || !cnpj || !razao) {
+    toast('Todos os campos são obrigatórios.', 'err');
     return;
   }
+  if (cnpj.replace(/\D/g,'').length !== 14) {
+    toast('CNPJ incompleto. Verifique e tente novamente.', 'err');
+    return;
+  }
+
+  const agora = new Date();
+  const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+
   const novo = {
     id: Date.now(),
-    nome, email, whats,
-    cnpj: cnpj.replace(/\D/g,''), // grava só números → CNPJ_Integrador
+    nome, email, tel,
+    cnpj: cnpj.replace(/\D/g,''),
     razao,
-    consultor: (app.usuario || '').split('@')[0].toUpperCase(),
-    checkin: 'NÃO'
+    checkin: 'NÃO',
+    checkin_por: '',
+    checkin_data: '',
+    _novo: true,
+    _criado_por: (app.usuario || '').toUpperCase(),
+    _criado_em: dataHora,
   };
   app.inscritos.push(novo);
   fecharModal();
@@ -1088,18 +1056,19 @@ function salvar() {
 
 // ─── EXPORTAR CSV ──────────────────────────────────────────
 function exportar() {
+  const evt = app.evento;
   const cab = ['ID_Evento','Nome_Evento','Cidade','Estado','Nome_Completo','E-mail',
-               'Contato_Whatsapp','CNPJ_Integrador','Razão_Social','Consultor','Checkin_Flag'];
+               'Telefone','CNPJ_Integradora','Razão_Social','Checkin_Flag','Checkin_Por','Checkin_Data'];
   const linhas = app.inscritos.map(i => [
-    app.evento.id, 'SOLARIZANDO NA ESTRADA',
-    app.evento.cidade, app.evento.uf,
-    i.nome, i.email, i.whats || '',
-    i.cnpj, i.razao, i.consultor, i.checkin
+    evt.id, 'SOLARIZANDO NA ESTRADA', evt.cidade, evt.estado,
+    i.nome, i.email, i.tel||'',
+    i.cnpj, i.razao,
+    i.checkin, i.checkin_por||'', i.checkin_data||''
   ]);
-  const csv = [cab, ...linhas].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const csv = [cab,...linhas].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
-  a.download = `checkin_${app.evento.cidade}_${app.evento.data.replace(/\//g,'-')}.csv`;
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = `checkin_${evt.cidade}_${evt.data.replace(/\//g,'-')}.csv`;
   a.click();
   toast('CSV exportado com sucesso', 'ok');
 }
