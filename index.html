@@ -772,7 +772,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-      <button class="btn-salvar" onclick="salvar()">Salvar inscrito</button>
+      <button class="btn-salvar" id="btn-salvar" onclick="salvar()">Salvar inscrito</button>
     </div>
   </div>
 </div>
@@ -780,56 +780,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── DADOS DEMO ────────────────────────────────────────────
-const EVENTOS = [
-  { id:'SOL20250717-1', cidade:'RECIFE',              uf:'PE', estado:'PERNAMBUCO',        regiao:'NORDESTE', data:'17/07/2025', total:312,  presentes:0 },
-  { id:'SOL20250918-1', cidade:'NATAL',               uf:'RN', estado:'RIO GRANDE DO NORTE',regiao:'NORDESTE',data:'18/09/2025', total:278,  presentes:0 },
-  { id:'SOL20250925-1', cidade:'BELÉM',               uf:'PA', estado:'PARÁ',              regiao:'NORTE',    data:'25/09/2025', total:305,  presentes:1 },
-  { id:'SOL20251009-1', cidade:'JUAZEIRO DO NORTE',   uf:'CE', estado:'CEARÁ',             regiao:'NORDESTE', data:'09/10/2025', total:198,  presentes:0 },
-  { id:'SOL20251023-1', cidade:'SALVADOR',            uf:'BA', estado:'BAHIA',             regiao:'NORDESTE', data:'23/10/2025', total:421,  presentes:0 },
-  { id:'SOL20251113-1', cidade:'SÃO LUÍS',            uf:'MA', estado:'MARANHÃO',          regiao:'NORDESTE', data:'13/11/2025', total:244,  presentes:0 },
-  { id:'SOL20251204-1', cidade:'TERESINA',            uf:'PI', estado:'PIAUÍ',             regiao:'NORDESTE', data:'04/12/2025', total:1592, presentes:1 },
-  { id:'SOL20260305-1', cidade:'FEIRA DE SANTANA',    uf:'BA', estado:'BAHIA',             regiao:'NORDESTE', data:'05/03/2026', total:0,    presentes:0 },
-  { id:'SOL20260319-1', cidade:'PETROLINA',           uf:'PE', estado:'PERNAMBUCO',        regiao:'NORDESTE', data:'19/03/2026', total:0,    presentes:0 },
-  { id:'SOL20260409-1', cidade:'IMPERATRIZ',          uf:'MA', estado:'MARANHÃO',          regiao:'NORDESTE', data:'09/04/2026', total:0,    presentes:0 },
-  { id:'SOL20260507-1', cidade:'SANTARÉM',            uf:'PA', estado:'PARÁ',              regiao:'NORTE',    data:'07/05/2026', total:0,    presentes:0 },
-  { id:'SOL20260521-1', cidade:'JOÃO PESSOA',         uf:'PB', estado:'PARAÍBA',           regiao:'NORDESTE', data:'21/05/2026', total:0,    presentes:0 },
-  { id:'SOL20260611-1', cidade:'ARACAJU',             uf:'SE', estado:'SERGIPE',           regiao:'NORDESTE', data:'11/06/2026', total:0,    presentes:0 },
-  { id:'SOL20260618-1', cidade:'MACEIÓ',              uf:'AL', estado:'ALAGOAS',           regiao:'NORDESTE', data:'18/06/2026', total:0,    presentes:0 },
-  { id:'SOL20260723-1', cidade:'MARABÁ',              uf:'PA', estado:'PARÁ',              regiao:'NORTE',    data:'23/07/2026', total:0,    presentes:0 },
-  { id:'SOL20260917-1', cidade:'MANAUS',              uf:'AM', estado:'AMAZONAS',          regiao:'NORTE',    data:'17/09/2026', total:0,    presentes:0 },
-  { id:'SOL20260924-1', cidade:'VITÓRIA DA CONQUISTA',uf:'BA', estado:'BAHIA',             regiao:'NORDESTE', data:'24/09/2026', total:0,    presentes:0 },
-  { id:'SOL20261008-1', cidade:'CARUARU',             uf:'PE', estado:'PERNAMBUCO',        regiao:'NORDESTE', data:'08/10/2026', total:0,    presentes:0 },
-  { id:'SOL20261022-1', cidade:'MOSSORÓ',             uf:'RN', estado:'RIO GRANDE DO NORTE',regiao:'NORDESTE',data:'22/10/2026', total:0,    presentes:0 },
-  { id:'SOL20261112-1', cidade:'PALMAS',              uf:'TO', estado:'TOCANTINS',         regiao:'NORTE',    data:'12/11/2026', total:0,    presentes:0 },
-  { id:'SOL20261210-1', cidade:'MACAPÁ',              uf:'AP', estado:'AMAPÁ',             regiao:'NORTE',    data:'10/12/2026', total:0,    presentes:0 },
-];
-
-const INSCRITOS_BASE = [
-  { id_evento:'SOL20251204-1', id:1,  nome:'ALEXANDRE MONTEIRO LIMA',           email:'artsolsolar@gmail.com',         tel:'86998878430', cnpj:'52832673000101', razao:'ALEXANDRE MONTEIRO LIMA',            checkin:'SIM', checkin_por:'ISIS.CRISTINE@SOUENERGY.COM.BR',  checkin_data:'04/12/2025 08:31' },
-  { id_evento:'SOL20251204-1', id:2,  nome:'ALLEX BRENNO PÁSCOA SOARES',        email:'a3engenharia.solar@gmail.com',   tel:'86994329010', cnpj:'31145743000183', razao:'PÁSCOA ENGENHARIA LTDA',             checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:3,  nome:'BERNARDINO ANTONIO FERNANDES NETO', email:'bfenergiasolar.pi@gmail.com',    tel:'86995357787', cnpj:'40644336000101', razao:'B A FERNANDES NETO LTDA',            checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:4,  nome:'WELLINGTON RAMOS SILVA',            email:'energiasolarteresina@gmail.com', tel:'86981659927', cnpj:'44317423000105', razao:'WELLINGTON RAMOS SILVA',             checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:5,  nome:'ALYSSON FELIPE ANATALIO SILVA',     email:'eng.felipeanatalio@hotmail.com', tel:'86999145528', cnpj:'45273701000132', razao:'REI DA ENERGIA SOLAR',              checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:6,  nome:'EDVALDO JOAQUIM DA PAIXÃO',         email:'edvaldosaojoao@hotmail.com',     tel:'86999421628', cnpj:'47485315000130', razao:'EDVALDO JOAQUIM DA PAIXÃO',         checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:7,  nome:'FRANCISCO CARLOS DA SILVA SOUZA',   email:'hackengenharia@gmail.com',       tel:'86995182156', cnpj:'33611588000179', razao:'HACK ENGENHARIA LTDA',              checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:8,  nome:'THIAGO VELOSO MAGALHÃES',           email:'thiagumagalhaes@gmail.com',      tel:'86999161114', cnpj:'05647004000180', razao:'VALE DO PARNAÍBA ENERGIAS',         checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:9,  nome:'LEANDRO GOMES DE SOUSA',            email:'leandro-desousa@hotmail.com',    tel:'86999466252', cnpj:'37287390000132', razao:'GSPROJETOS',                        checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:10, nome:'FÁBIO ALVES FERREIRA',              email:'fabioalves@dfhenerg.com',        tel:'86998493940', cnpj:'40565505000118', razao:'DFH ENERGIA',                       checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:11, nome:'CLÁUDIO BARROS',                    email:'claudio@barrosenerg.com',        tel:'86999597061', cnpj:'49619625000125', razao:'BARROS ENERGIA E CONSULTORIA LTDA', checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:12, nome:'KARINA BORGES',                     email:'kbsnutri@gmail.com',             tel:'86988101028', cnpj:'46633224000131', razao:'ACS ENERGY E CONSTRUÇÃO',           checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:13, nome:'DAIELE DE SOUSA VIANA',             email:'daielevs@gmail.com',             tel:'86998180592', cnpj:'45186617000181', razao:'NOSSOLAR ENGENHARIA',               checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:14, nome:'MANOEL FEITOSA COSTA NETO',         email:'manoelfcn@yahoo.com',            tel:'86988224333', cnpj:'34206019000100', razao:'MANOEL FEITOSA COSTA NETO',         checkin:'NÃO', checkin_por:'', checkin_data:'' },
-  { id_evento:'SOL20251204-1', id:15, nome:'SAMUEL FERREIRA DE SOUSA',          email:'terrasolar-the@hotmail.com',     tel:'86995360646', cnpj:'18254559000103', razao:'SAMUEL FERREIRA DE SOUSA',          checkin:'NÃO', checkin_por:'', checkin_data:'' },
-];
-
-// ─── CONFIGURAÇÃO DA PLANILHA (fixo) ──────────────────────
-const SHEETS_ID  = '17Lf4xrRXb7BJrBmNBHpdxazT849KfcjxycW0CIT6Tvk';
-const GID_EVENTOS    = '2480586';
-const GID_INSCRITOS  = '1699299530';
-// URL base para leitura pública via CSV export
-const csvUrl = (gid) =>
-  `https://docs.google.com/spreadsheets/d/${SHEETS_ID}/export?format=csv&gid=${gid}`;
+// ─── CONFIGURAÇÃO ─────────────────────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKzqg3w8eWGtin4tzYVu0-5b1uVKBm0vSKfsCm9Uu4o2ddcChT3xI9Bz0nT-njTA1M/exec';
 
 // ─── ESTADO ────────────────────────────────────────────────
 let app = {
@@ -840,11 +792,10 @@ let app = {
 
 // ─── AUTENTICAÇÃO ──────────────────────────────────────────
 function login() {
-  // Em produção: substituir por OAuth Google real
   app.usuario = 'consultor@souenergy.com.br';
   document.getElementById('usuario-display').textContent = app.usuario;
   mostrar('tela-eventos');
-  renderEventos();
+  carregarEventos();
 }
 
 function logout() {
@@ -860,57 +811,145 @@ function mostrar(id) {
 
 function voltar() {
   mostrar('tela-eventos');
-  renderEventos();
+  carregarEventos();
 }
 
-// ─── EVENTOS ───────────────────────────────────────────────
+// ─── API ───────────────────────────────────────────────────
+async function apiGet(params) {
+  const url = SCRIPT_URL + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function apiPost(dados) {
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(dados),
+  });
+  return res.json();
+}
+
+// ─── CARREGAR EVENTOS DA PLANILHA ──────────────────────────
+async function carregarEventos() {
+  const grid = document.getElementById('eventos-grid');
+  grid.innerHTML = `<div style="grid-column:1/-1;padding:2rem 0;color:var(--texto-muted);font-size:13px;font-weight:500;">
+    <span class="spinner"></span>Carregando edições...
+  </div>`;
+
+  try {
+    const dados = await apiGet({ acao: 'eventos' });
+    if (!dados.ok) throw new Error(dados.erro);
+    renderEventos(dados.eventos);
+  } catch (err) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:2rem 0;color:var(--erro);font-size:13px;">
+      Erro ao carregar eventos: ${err.message}
+    </div>`;
+  }
+}
+
+// ─── RENDER EVENTOS ────────────────────────────────────────
 function parseData(str) {
-  // formato DD/MM/YYYY
-  const [d, m, a] = str.split('/');
-  return new Date(+a, +m - 1, +d);
+  if (!str) return null;
+  // Suporta DD/MM/YYYY e objetos Date do Sheets
+  if (str.includes('/')) {
+    const [d, m, a] = str.split('/');
+    return new Date(+a, +m - 1, +d);
+  }
+  return new Date(str);
 }
 
 function eventoEncerrado(dataStr) {
   const dataEvento = parseData(dataStr);
+  if (!dataEvento) return false;
   const limite = new Date(dataEvento);
-  limite.setDate(limite.getDate() + 2); // D+2
+  limite.setDate(limite.getDate() + 2);
   limite.setHours(23, 59, 59, 999);
   return new Date() > limite;
 }
 
-function renderEventos() {
+function renderEventos(eventos) {
   const grid = document.getElementById('eventos-grid');
-  grid.innerHTML = EVENTOS.map(e => {
-    const encerrado = eventoEncerrado(e.data);
+  if (!eventos || !eventos.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:2rem 0;color:var(--texto-muted);font-size:13px;">Nenhum evento encontrado na planilha.</div>`;
+    return;
+  }
+
+  grid.innerHTML = eventos.map(e => {
+    // Campos da aba Eventos: ID_Evento, Tipo_Evento, Nome_Evento, Data_Evento_Inicio, Data_Evento_Fim, Cidade, Estado, Região, Local, Responsável
+    const id       = e['ID_Evento']         || '';
+    const cidade   = e['Cidade']            || '';
+    const estado   = e['Estado']            || '';
+    const regiao   = e['Região']            || '';
+    const dataStr  = e['Data_Evento_Inicio']|| '';
+    const dataFmt  = dataStr.includes('00:00:00') ? dataStr.split(' ')[0] : dataStr;
+    const encerrado = eventoEncerrado(dataStr);
+
     return `
-    <div class="evento-card${encerrado ? ' encerrado' : ''}" ${encerrado ? '' : `onclick="abrirEvento('${e.id}')"`}>
-      <p class="evento-cidade">${e.cidade}</p>
-      <p class="evento-uf">${e.uf} · ${e.regiao}</p>
-      <p class="evento-data">${e.data}</p>
+    <div class="evento-card${encerrado ? ' encerrado' : ''}"
+      ${encerrado ? '' : `onclick="abrirEvento('${id}', this)"`}
+      data-id="${id}">
+      <p class="evento-cidade">${cidade}</p>
+      <p class="evento-uf">${estado} · ${regiao}</p>
+      <p class="evento-data">${dataFmt}</p>
       <div class="evento-rodape">
         ${encerrado
           ? '<span class="badge-encerrado">Encerrado</span>'
-          : `<span class="badge-inscritos">${e.total.toLocaleString('pt-BR')} inscritos</span>`
+          : '<span class="badge-inscritos">Ver inscritos</span>'
         }
-        ${!encerrado && e.presentes > 0 ? `<span class="badge-presentes">${e.presentes} presentes</span>` : ''}
       </div>
     </div>`;
   }).join('');
 }
 
-function abrirEvento(id) {
-  app.evento = EVENTOS.find(e => e.id === id);
-  // Filtra só os inscritos do evento selecionado pelo ID
-  // Quando integrado ao Sheets, essa lista virá da planilha filtrada por ID_Evento
-  app.inscritos = JSON.parse(JSON.stringify(
-    INSCRITOS_BASE.filter(i => i.id_evento === id)
-  ));
+// ─── ABRIR EVENTO E CARREGAR INSCRITOS ─────────────────────
+async function abrirEvento(id, cardEl) {
+  // Pega os dados do evento direto do card
+  const card = cardEl || document.querySelector(`[data-id="${id}"]`);
+  app.evento = {
+    id,
+    cidade:  card ? card.querySelector('.evento-cidade').textContent : id,
+    estado:  card ? card.querySelector('.evento-uf').textContent.split(' · ')[0] : '',
+    regiao:  card ? card.querySelector('.evento-uf').textContent.split(' · ')[1] : '',
+    data:    card ? card.querySelector('.evento-data').textContent : '',
+  };
+
   document.getElementById('evento-header').textContent =
-    `Solarizando na Estrada — ${app.evento.cidade}/${app.evento.uf}`;
+    `Solarizando na Estrada — ${app.evento.cidade}/${app.evento.estado}`;
   document.getElementById('busca').value = '';
   mostrar('tela-checkin');
-  renderTabela(app.inscritos);
+
+  // Loading na tabela
+  document.getElementById('tbody').innerHTML =
+    `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--texto-muted);font-size:13px;">
+      <span class="spinner"></span>Carregando inscritos...
+    </td></tr>`;
   atualizarStats();
+
+  try {
+    const dados = await apiGet({ acao: 'inscritos', id_evento: id });
+    if (!dados.ok) throw new Error(dados.erro);
+
+    app.inscritos = dados.inscritos.map(i => ({
+      _linha:      i._linha,
+      id:          i._linha, // usa número da linha como ID único
+      nome:        i['Nome_Completo']    || '',
+      email:       i['E-mail']           || '',
+      tel:         i['Telefone']         || '',
+      cnpj:        i['CNPJ_Integradora'] || '',
+      razao:       i['Razão_Social']     || '',
+      checkin:     i['Checkin_Flag']     || 'NÃO',
+      checkin_por: i['Checkin_Por']      || '',
+      checkin_data:i['Checkin_Data']     || '',
+    }));
+
+    renderTabela(app.inscritos);
+    atualizarStats();
+  } catch (err) {
+    document.getElementById('tbody').innerHTML =
+      `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--erro);font-size:13px;">
+        Erro ao carregar inscritos: ${err.message}
+      </td></tr>`;
+  }
 }
 
 // ─── CHECKIN ───────────────────────────────────────────────
@@ -928,18 +967,18 @@ function filtrar() {
 function renderTabela(lista) {
   const tb = document.getElementById('tbody');
   if (!lista.length) {
-    tb.innerHTML = '<tr class="vazio"><td colspan="6">Nenhum inscrito encontrado para essa busca.</td></tr>';
+    tb.innerHTML = '<tr class="vazio"><td colspan="6">Nenhum inscrito encontrado.</td></tr>';
     return;
   }
   tb.innerHTML = lista.map(i => `
-    <tr class="${i.checkin==='SIM'?'presente':''}" id="r${i.id}">
+    <tr class="${i.checkin==='SIM'?'presente':''}" id="r${i._linha}">
       <td class="nome">${i.nome}</td>
       <td class="sec">${i.email}</td>
       <td class="sec">${i.tel||'—'}</td>
       <td class="sec">${fmtCNPJ(i.cnpj)}</td>
       <td class="sec">${i.razao}</td>
       <td class="check-cell">
-        <button class="check-btn ${i.checkin==='SIM'?'on':''}" onclick="toggle(${i.id})"
+        <button class="check-btn ${i.checkin==='SIM'?'on':''}" onclick="toggle(${i._linha})"
           title="${i.checkin==='SIM'?'Desfazer check-in':'Confirmar presença'}">
           <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
         </button>
@@ -947,25 +986,36 @@ function renderTabela(lista) {
     </tr>`).join('');
 }
 
-function toggle(id) {
-  const i = app.inscritos.find(x => x.id === id);
+async function toggle(linha) {
+  const i = app.inscritos.find(x => x._linha === linha);
   if (!i) return;
-  const agora = new Date();
-  const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-  if (i.checkin === 'SIM') {
-    i.checkin = 'NÃO';
-    i.checkin_por = '';
-    i.checkin_data = '';
-  } else {
-    i.checkin = 'SIM';
-    i.checkin_por = (app.usuario || '').toUpperCase();
-    i.checkin_data = dataHora;
-  }
+
+  const novoFlag = i.checkin === 'SIM' ? 'NÃO' : 'SIM';
+
+  // Atualiza visual imediatamente (otimista)
+  i.checkin = novoFlag;
+  i.checkin_por  = novoFlag === 'SIM' ? app.usuario.toUpperCase() : '';
+  i.checkin_data = novoFlag === 'SIM' ? new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'}) : '';
   filtrar();
   atualizarStats();
-  toast(i.checkin === 'SIM' ? `✓ Check-in confirmado: ${i.nome}` : `Check-in desfeito: ${i.nome}`,
-        i.checkin === 'SIM' ? 'ok' : '');
-  // TODO: gravar no Sheets via Apps Script
+  toast(novoFlag === 'SIM' ? `✓ Check-in confirmado` : `Check-in desfeito`, novoFlag === 'SIM' ? 'ok' : '');
+
+  // Grava no Sheets em background
+  try {
+    const res = await apiPost({
+      acao: 'checkin',
+      linha,
+      checkin_flag: novoFlag,
+      usuario: app.usuario,
+    });
+    if (!res.ok) throw new Error(res.erro);
+  } catch (err) {
+    // Reverte se falhou
+    i.checkin = novoFlag === 'SIM' ? 'NÃO' : 'SIM';
+    filtrar();
+    atualizarStats();
+    toast('Erro ao gravar check-in. Tente novamente.', 'err');
+  }
 }
 
 function atualizarStats() {
@@ -1014,7 +1064,7 @@ function mascaraCNPJ(el) {
   el.value = v;
 }
 
-function salvar() {
+async function salvar() {
   const nome  = document.getElementById('f-nome').value.trim().toUpperCase();
   const email = document.getElementById('f-email').value.trim().toLowerCase();
   const tel   = document.getElementById('f-tel').value.trim();
@@ -1030,28 +1080,48 @@ function salvar() {
     return;
   }
 
-  const agora = new Date();
-  const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  const btn = document.getElementById('btn-salvar');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
 
-  const novo = {
-    id: Date.now(),
-    nome, email, tel,
-    cnpj: cnpj.replace(/\D/g,''),
-    razao,
-    checkin: 'NÃO',
-    checkin_por: '',
-    checkin_data: '',
-    _novo: true,
-    _criado_por: (app.usuario || '').toUpperCase(),
-    _criado_em: dataHora,
-  };
-  app.inscritos.push(novo);
-  fecharModal();
-  document.getElementById('busca').value = '';
-  renderTabela(app.inscritos);
-  atualizarStats();
-  toast(`${nome} adicionado com sucesso`, 'ok');
-  // TODO: gravar linha no Sheets via Apps Script
+  try {
+    const res = await apiPost({
+      acao:        'novo_inscrito',
+      id_evento:   app.evento.id,
+      nome_evento: 'SOLARIZANDO NA ESTRADA',
+      cidade:      app.evento.cidade,
+      estado:      app.evento.estado,
+      nome, email, tel,
+      cnpj:  cnpj.replace(/\D/g,''),
+      razao,
+      usuario: app.usuario,
+    });
+
+    if (!res.ok) throw new Error(res.erro);
+
+    // Adiciona localmente com a linha retornada pelo script
+    const novo = {
+      _linha: res.linha,
+      id:     res.linha,
+      nome, email, tel,
+      cnpj: cnpj.replace(/\D/g,''),
+      razao,
+      checkin: 'NÃO',
+      checkin_por: '',
+      checkin_data: '',
+    };
+    app.inscritos.push(novo);
+    fecharModal();
+    document.getElementById('busca').value = '';
+    renderTabela(app.inscritos);
+    atualizarStats();
+    toast(`${nome} adicionado com sucesso`, 'ok');
+  } catch (err) {
+    toast(`Erro ao salvar: ${err.message}`, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar inscrito';
+  }
 }
 
 // ─── EXPORTAR CSV ──────────────────────────────────────────
@@ -1068,7 +1138,7 @@ function exportar() {
   const csv = [cab,...linhas].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = `checkin_${evt.cidade}_${evt.data.replace(/\//g,'-')}.csv`;
+  a.download = `checkin_${evt.cidade}_${(evt.data||'').replace(/\//g,'-')}.csv`;
   a.click();
   toast('CSV exportado com sucesso', 'ok');
 }
