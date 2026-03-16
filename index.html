@@ -956,7 +956,7 @@ async function abrirEvento(id, cardEl) {
       tel:         i['Telefone']         || '',
       cnpj:        i['CNPJ_Integradora'] || '',
       razao:       i['Razão_Social']     || '',
-      checkin:     i['Checkin_Flag']     || 'NÃO',
+      checkin:     (i['Checkin_Flag'] || 'NÃO').toUpperCase().replace('NAO','NÃO'),
       checkin_por: i['Checkin_Por']      || '',
       checkin_data:i['Checkin_Data']     || '',
     }));
@@ -1009,31 +1009,38 @@ async function toggle(linha) {
   const i = app.inscritos.find(x => x._linha === linha);
   if (!i) return;
 
-  const novoFlag = i.checkin === 'SIM' ? 'NÃO' : 'SIM';
+  const eraPresente = i.checkin === 'SIM';
+  const novoFlag    = eraPresente ? 'NÃO' : 'SIM';
+  const novoFlagApi = eraPresente ? 'NAO' : 'SIM'; // sem acento para URL
 
   // Atualiza visual imediatamente (otimista)
-  i.checkin = novoFlag;
-  i.checkin_por  = novoFlag === 'SIM' ? app.usuario.toUpperCase() : '';
-  i.checkin_data = novoFlag === 'SIM' ? new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+  i.checkin      = novoFlag;
+  i.checkin_por  = !eraPresente ? app.usuario.toUpperCase() : '';
+  i.checkin_data = !eraPresente ? new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'}) : '';
   filtrar();
   atualizarStats();
-  toast(novoFlag === 'SIM' ? `✓ Check-in confirmado` : `Check-in desfeito`, novoFlag === 'SIM' ? 'ok' : '');
+  toast(!eraPresente ? `✓ Check-in confirmado` : `Check-in desfeito`, !eraPresente ? 'ok' : '');
 
-  // Grava no Sheets em background
+  // Grava no Sheets
   try {
-    const res = await apiPost({
-      acao: 'checkin',
-      linha,
-      checkin_flag: novoFlag,
-      usuario: app.usuario,
+    console.log('[CHECK-IN] linha:', linha, 'flag:', novoFlagApi, 'usuario:', app.usuario);
+    const res = await apiGet({
+      acao:         'checkin',
+      linha:        linha,
+      checkin_flag: novoFlagApi,
+      usuario:      app.usuario,
     });
+    console.log('[CHECK-IN] resposta:', res);
     if (!res.ok) throw new Error(res.erro);
   } catch (err) {
+    console.error('[CHECK-IN] erro:', err);
     // Reverte se falhou
-    i.checkin = novoFlag === 'SIM' ? 'NÃO' : 'SIM';
+    i.checkin      = eraPresente ? 'SIM' : 'NÃO';
+    i.checkin_por  = eraPresente ? i.checkin_por : '';
+    i.checkin_data = eraPresente ? i.checkin_data : '';
     filtrar();
     atualizarStats();
-    toast('Erro ao gravar check-in. Tente novamente.', 'err');
+    toast('Erro ao gravar check-in: ' + err.message, 'err');
   }
 }
 
