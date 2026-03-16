@@ -844,11 +844,8 @@ function apiGet(params) {
 }
 
 async function apiPost(dados) {
-  const res = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify(dados),
-  });
-  return res.json();
+  // Apps Script não aceita POST cross-origin — enviamos tudo via GET + JSONP
+  return apiGet(dados);
 }
 
 // ─── CARREGAR EVENTOS DA PLANILHA ──────────────────────────
