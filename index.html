@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check-in — Solarizando na Estrada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --laranja:     #F97316;
+      --laranja-esc: #EA580C;
+      --laranja-deep:#C2410C;
+      --amarelo:     #FACC15;
+      --amarelo-esc: #EAB308;
+      --branco:      #FFFFFF;
+      --cinza-bg:    #FFF7ED;
+      --cinza-borda: rgba(249,115,22,0.2);
+      --texto:       #1C0A00;
+      --texto-muted: #78350F;
+      --verde-ok:    #16A34A;
+      --verde-bg:    #F0FDF4;
+      --verde-borda: #86EFAC;
+      --erro:        #DC2626;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #FFF7ED;
+      color: var(--texto);
+      min-height: 100vh;
+    }
+
+    /* ─── TELAS ─────────────────────────────────────── */
+    .tela { display: none; min-height: 100vh; }
+    .tela.ativa { display: flex; flex-direction: column; }
+    #tela-login.ativa { align-items: center; justify-content: center; }
+
+    /* ─── LOGIN ─────────────────────────────────────── */
+    #tela-login {
+      background: var(--laranja-esc);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #tela-login::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(250,204,21,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 90% 80%, rgba(194,65,12,0.6) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .login-shapes {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .login-shapes span {
+      position: absolute;
+      border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+      opacity: 0.15;
+      background: var(--amarelo);
+    }
+    .login-shapes span:nth-child(1) { width: 400px; height: 400px; top: -100px; right: -80px; transform: rotate(20deg); }
+    .login-shapes span:nth-child(2) { width: 280px; height: 280px; bottom: -60px; left: -60px; transform: rotate(-15deg); opacity: 0.1; }
+    .login-shapes span:nth-child(3) { width: 180px; height: 180px; bottom: 20%; right: 10%; transform: rotate(45deg); opacity: 0.08; }
+
+    .login-card {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.97);
+      border-radius: 20px;
+      padding: 2.5rem 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      animation: cardEntrada 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes cardEntrada {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .login-topo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(249,115,22,0.12);
+    }
+    .login-marca {
+      width: 44px; height: 44px;
+      background: var(--laranja);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .login-marca svg { width: 22px; height: 22px; }
+    .login-nome-marca { line-height: 1.2; }
+    .login-nome-marca strong { display: block; font-size: 15px; font-weight: 700; color: var(--texto); }
+    .login-nome-marca span { font-size: 12px; color: var(--texto-muted); font-weight: 500; }
+
+    .login-titulo {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--texto);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .login-titulo em {
+      font-style: normal;
+      color: var(--laranja);
+    }
+    .login-sub {
+      font-size: 13px;
+      color: var(--texto-muted);
+      line-height: 1.5;
+      margin-bottom: 1.75rem;
+    }
+
+    .btn-google {
+      width: 100%;
+      height: 46px;
+      background: white;
+      border: 1.5px solid rgba(0,0,0,0.12);
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--texto);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .btn-google:hover {
+      background: #f8f8f8;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+
+    .login-aviso {
+      font-size: 11px;
+      color: var(--texto-muted);
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    /* ─── TOPBAR ─────────────────────────────────────── */
+    .topbar {
+      background: var(--laranja);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-esq { display: flex; align-items: center; gap: 12px; }
+    .topbar-marca {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .topbar-icone {
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .topbar-icone svg { width: 16px; height: 16px; }
+    .topbar-nome {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: 0.02em;
+    }
+    .topbar-sep {
+      width: 1px; height: 20px;
+      background: rgba(255,255,255,0.3);
+    }
+    .topbar-titulo {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+    .topbar-dir { display: flex; align-items: center; gap: 8px; }
+    .topbar-usuario {
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+      font-weight: 500;
+    }
+    .btn-voltar, .btn-sair, .btn-sm {
+      height: 30px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-voltar:hover, .btn-sair:hover, .btn-sm:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* ─── CONTEÚDO ─────────────────────────────────── */
+    .conteudo {
+      flex: 1;
+      padding: 24px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ─── CONFIG SHEETS ─────────────────────────────── */
+    .config-sheets {
+      background: white;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .config-sheets p { font-size: 13px; color: var(--texto-muted); font-weight: 500; flex-shrink: 0; }
+    .config-sheets input {
+      flex: 1;
+      min-width: 240px;
+      height: 36px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 8px;
+      padding: 0 10px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--texto);
+      outline: none;
+      background: var(--cinza-bg);
+    }
+    .config-sheets input:focus { border-color: var(--laranja); background: white; }
+    .btn-conectar {
+      height: 36px;
+      background: var(--laranja);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-conectar:hover { background: var(--laranja-esc); }
+    .badge-conectado {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--verde-ok);
+      background: var(--verde-bg);
+      border: 1px solid var(--verde-borda);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-weight: 600;
+    }
+
+    /* ─── CABEÇALHO DA SEÇÃO ─────────────────────────── */
+    .sec-header {
+      margin-bottom: 20px;
+    }
+    .sec-titulo {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--texto);
+      letter-spacing: 0.01em;
+    }
+    .sec-sub {
+      font-size: 13px;
+      color: var(--texto-muted);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    /* ─── GRID DE EVENTOS ────────────────────────────── */
+    .eventos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .evento-card {
+      background: white;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 14px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .evento-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--laranja);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.2s ease;
+    }
+    .evento-card:hover {
+      border-color: var(--laranja);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(249,115,22,0.15);
+    }
+    .evento-card:hover::before { transform: scaleX(1); }
+
+    .evento-cidade {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--texto);
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+    .evento-uf {
+      font-size: 12px;
+      color: var(--texto-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .evento-data {
+      font-size: 12px;
+      color: var(--texto-muted);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .evento-rodape {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge-inscritos {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #FFF7ED;
+      color: var(--laranja-deep);
+      border: 1px solid rgba(249,115,22,0.25);
+    }
+    .badge-presentes {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--verde-ok);
+    }
+
+    .evento-card.encerrado {
+      cursor: not-allowed;
+      opacity: 0.5;
+      filter: grayscale(60%);
+    }
+    .evento-card.encerrado:hover {
+      border-color: var(--cinza-borda);
+      transform: none;
+      box-shadow: none;
+    }
+    .evento-card.encerrado::before { display: none; }
+    .badge-encerrado {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #F1F5F9;
+      color: #64748B;
+      border: 1px solid #CBD5E1;
+    }
+
+    /* ─── TOOLBAR CHECKIN ────────────────────────────── */
+    .checkin-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .busca-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+    .busca-wrap input {
+      width: 100%;
+      height: 40px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 10px;
+      padding: 0 12px 0 38px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--texto);
+      background: white;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .busca-wrap input:focus { border-color: var(--laranja); }
+    .busca-wrap input::placeholder { color: #A8845C; }
+    .busca-icone {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #A8845C;
+      pointer-events: none;
+    }
+    .btn-adicionar {
+      height: 40px;
+      background: var(--laranja);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0 18px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-adicionar:hover { background: var(--laranja-esc); }
+    .btn-exportar {
+      height: 40px;
+      background: white;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--texto-muted);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-exportar:hover { background: var(--cinza-bg); }
+
+    /* ─── STATS ──────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: white;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--texto-muted);
+      font-weight: 600;
+    }
+    .stat strong {
+      color: var(--texto);
+      font-size: 16px;
+      font-weight: 800;
+      display: block;
+      line-height: 1.2;
+    }
+    .stat.destaque { border-color: var(--laranja); background: #FFF7ED; }
+    .stat.destaque strong { color: var(--laranja-esc); }
+
+    /* ─── TABELA ─────────────────────────────────────── */
+    .tabela-wrap {
+      background: white;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .tabela-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 780px; }
+    thead { background: #FFF7ED; }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--texto-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1.5px solid var(--cinza-borda);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(249,115,22,0.08);
+      transition: background 0.1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #FFFBF5; }
+    tbody tr.presente { background: #F0FDF4; }
+    tbody tr.presente:hover { background: #DCFCE7; }
+    tbody td {
+      padding: 11px 14px;
+      vertical-align: middle;
+      color: var(--texto);
+    }
+    td.nome { font-weight: 700; font-size: 13px; }
+    td.sec { color: var(--texto-muted); font-size: 12px; font-weight: 500; }
+    .check-cell { text-align: center; width: 60px; }
+    .check-btn {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      border: 2px solid rgba(249,115,22,0.3);
+      background: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .check-btn:hover { border-color: var(--laranja); background: #FFF7ED; }
+    .check-btn.on { background: var(--verde-ok); border-color: var(--verde-ok); }
+    .check-btn svg { width: 13px; height: 13px; fill: none; stroke: white; stroke-width: 2.5; display: none; }
+    .check-btn.on svg { display: block; }
+    .vazio td {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--texto-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* ─── MODAL ──────────────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28,10,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 1rem;
+      backdrop-filter: blur(2px);
+    }
+    .overlay.aberto { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 18px;
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+      animation: modalEntrada 0.25s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes modalEntrada {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-titulo {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--texto);
+      margin-bottom: 1.25rem;
+    }
+    .modal-titulo span {
+      display: block;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--laranja);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+    .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .full { grid-column: 1 / -1; }
+    .campo label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--texto-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .campo input {
+      width: 100%;
+      height: 38px;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 8px;
+      padding: 0 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--texto);
+      background: var(--cinza-bg);
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .campo input:focus { border-color: var(--laranja); background: white; }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 1.5rem;
+    }
+    .btn-cancelar {
+      height: 38px;
+      background: white;
+      border: 1.5px solid var(--cinza-borda);
+      border-radius: 8px;
+      padding: 0 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--texto-muted);
+      cursor: pointer;
+    }
+    .btn-cancelar:hover { background: var(--cinza-bg); }
+    .btn-salvar {
+      height: 38px;
+      background: var(--laranja);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 20px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-salvar:hover { background: var(--laranja-esc); }
+
+    /* ─── TOAST ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--texto);
+      color: white;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      z-index: 300;
+      animation: toastIn 0.2s ease;
+      max-width: 320px;
+    }
+    .toast.ok { background: var(--verde-ok); }
+    .toast.err { background: var(--erro); }
+    @keyframes toastIn {
+      from { transform: translateY(8px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ─── SPINNER ────────────────────────────────────── */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(249,115,22,0.2);
+      border-top-color: var(--laranja);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── RESPONSIVO ─────────────────────────────────── */
+    @media (max-width: 600px) {
+      .conteudo { padding: 16px; }
+      .topbar { padding: 0 16px; }
+      .topbar-nome { display: none; }
+      .topbar-sep { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="tela-login" class="tela ativa">
+  <div class="login-shapes">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="login-card">
+    <div class="login-topo">
+      <div class="login-marca">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="login-nome-marca">
+        <strong>Sou Energy</strong>
+        <span>Painel de Check-in</span>
+      </div>
+    </div>
+    <p class="login-titulo">Solarizando<br><em>na Estrada</em></p>
+    <p class="login-sub">Acesso exclusivo para consultores com e-mail corporativo <strong>@souenergy.com.br</strong></p>
+    <button class="btn-google" onclick="login()">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Entrar com Google
+    </button>
+    <p class="login-aviso">Apenas @souenergy.com.br têm acesso a este painel</p>
+  </div>
+</div>
+
+<!-- ═══════════════ EVENTOS ═══════════════ -->
+<div id="tela-eventos" class="tela">
+  <div class="topbar">
+    <div class="topbar-esq">
+      <div class="topbar-marca">
+        <div class="topbar-icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span class="topbar-nome">Sou Energy</span>
+      </div>
+      <div class="topbar-sep"></div>
+      <span class="topbar-titulo">Solarizando na Estrada — Check-in</span>
+    </div>
+    <div class="topbar-dir">
+      <span class="topbar-usuario" id="usuario-display"></span>
+      <button class="btn-sair" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="conteudo">
+    <div id="config-area" class="config-sheets">
+      <p>Planilha Google Sheets:</p>
+      <input type="text" id="sheets-id" placeholder="Cole aqui o ID da planilha (da URL do Google Sheets)" />
+      <button class="btn-conectar" onclick="conectar()">Conectar</button>
+    </div>
+
+    <div class="sec-header">
+      <p class="sec-titulo">Selecione a edição</p>
+      <p class="sec-sub">Clique na cidade para gerenciar o check-in dos inscritos</p>
+    </div>
+    <div class="eventos-grid" id="eventos-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ CHECKIN ═══════════════ -->
+<div id="tela-checkin" class="tela">
+  <div class="topbar">
+    <div class="topbar-esq">
+      <button class="btn-voltar" onclick="voltar()">← Edições</button>
+      <div class="topbar-sep"></div>
+      <span class="topbar-titulo" id="evento-header"></span>
+    </div>
+    <div class="topbar-dir">
+      <button class="btn-sm" onclick="exportar()">Exportar CSV</button>
+      <button class="btn-sair" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="conteudo">
+    <div class="checkin-toolbar">
+      <div class="busca-wrap">
+        <span class="busca-icone">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </span>
+        <input type="text" id="busca" placeholder="Buscar por nome, e-mail, CNPJ ou razão social..." oninput="filtrar()" />
+      </div>
+      <button class="btn-adicionar" onclick="abrirModal()">+ Adicionar inscrito</button>
+    </div>
+
+    <div class="stats-bar" id="stats"></div>
+
+    <div class="tabela-wrap">
+      <div class="tabela-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome completo</th>
+              <th>E-mail</th>
+              <th>WhatsApp</th>
+              <th>CNPJ</th>
+              <th>Razão social</th>
+              <th>Consultor</th>
+              <th style="text-align:center;">Check-in</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL ═══════════════ -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <p class="modal-titulo">
+      <span>Solarizando na Estrada</span>
+      Adicionar inscrito
+    </p>
+    <div class="mgrid">
+      <div class="campo full"><label>Nome completo</label><input id="f-nome" type="text" placeholder="Ex: João Silva" /></div>
+      <div class="campo full"><label>E-mail</label><input id="f-email" type="email" placeholder="joao@integradora.com.br" /></div>
+      <div class="campo"><label>WhatsApp</label><input id="f-whats" type="text" placeholder="86 99999-0000" /></div>
+      <div class="campo"><label>CNPJ</label><input id="f-cnpj" type="text" placeholder="00.000.000/0001-00" maxlength="18" oninput="mascaraCNPJ(this)" /></div>
+      <div class="campo full"><label>Razão social</label><input id="f-razao" type="text" placeholder="Nome da empresa" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-salvar" onclick="salvar()">Salvar inscrito</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DADOS DEMO ────────────────────────────────────────────
+const EVENTOS = [
+  { id:'SOL20250717-1', cidade:'Recife',            uf:'PE', regiao:'Nordeste', data:'17/07/2025', total:312,  presentes:0 },
+  { id:'SOL20250918-1', cidade:'Natal',             uf:'RN', regiao:'Nordeste', data:'18/09/2025', total:278,  presentes:0 },
+  { id:'SOL20250925-1', cidade:'Belém',             uf:'PA', regiao:'Norte',    data:'25/09/2025', total:305,  presentes:1 },
+  { id:'SOL20251009-1', cidade:'Juazeiro do Norte', uf:'CE', regiao:'Nordeste', data:'09/10/2025', total:198,  presentes:0 },
+  { id:'SOL20251023-1', cidade:'Salvador',          uf:'BA', regiao:'Nordeste', data:'23/10/2025', total:421,  presentes:0 },
+  { id:'SOL20251113-1', cidade:'São Luís',          uf:'MA', regiao:'Nordeste', data:'13/11/2025', total:244,  presentes:0 },
+  { id:'SOL20251204-1', cidade:'Teresina',          uf:'PI', regiao:'Nordeste', data:'04/12/2025', total:1592, presentes:1 },
+];
+
+const INSCRITOS_BASE = [
+  { id:1,  nome:'Alexandre Monteiro Lima',           email:'artsolsolar@gmail.com',          whats:'86998878430', cnpj:'52832673000101', razao:'Alexandre Monteiro Lima',            consultor:'ISIS CRISTINE',    checkin:'SIM' },
+  { id:2,  nome:'Allex Brenno Páscoa Soares',        email:'a3engenharia.solar@gmail.com',    whats:'86994329010', cnpj:'31145743000183', razao:'Páscoa Engenharia LTDA',             consultor:'DIANA PARENTE',    checkin:'NÃO' },
+  { id:3,  nome:'Bernardino Antonio Fernandes Neto', email:'bfenergiasolar.pi@gmail.com',     whats:'86995357787', cnpj:'40644336000101', razao:'B A FERNANDES NETO LTDA',            consultor:'LUCAS TADEU',      checkin:'NÃO' },
+  { id:4,  nome:'Wellington Ramos Silva',            email:'energiasolarteresina@gmail.com',  whats:'86981659927', cnpj:'44317423000105', razao:'Wellington Ramos Silva',             consultor:'DIANA PARENTE',    checkin:'NÃO' },
+  { id:5,  nome:'Alysson Felipe Anatalio Silva',     email:'eng.felipeanatalio@hotmail.com',  whats:'86999145528', cnpj:'45273701000132', razao:'REI DA ENERGIA SOLAR',              consultor:'DIANA PARENTE',    checkin:'NÃO' },
+  { id:6,  nome:'Edvaldo Joaquim da Paixão',         email:'edvaldosaojoao@hotmail.com',      whats:'86999421628', cnpj:'47485315000130', razao:'Edvaldo Joaquim da Paixão',         consultor:'LEVI DA SILVA',    checkin:'NÃO' },
+  { id:7,  nome:'Francisco Carlos da Silva Souza',   email:'hackengenharia@gmail.com',        whats:'86995182156', cnpj:'33611588000179', razao:'Hack Engenharia Ltda',              consultor:'ISIS CRISTINE',    checkin:'NÃO' },
+  { id:8,  nome:'Thiago Veloso Magalhães',           email:'thiagumagalhaes@gmail.com',       whats:'86999161114', cnpj:'05647004000180', razao:'Vale do Parnaíba Energias',         consultor:'NÃO TENHO',       checkin:'NÃO' },
+  { id:9,  nome:'Leandro Gomes de Sousa',            email:'leandro-desousa@hotmail.com',     whats:'86999466252', cnpj:'37287390000132', razao:'GSprojetos',                        consultor:'JEFFERSON PASSOS', checkin:'NÃO' },
+  { id:10, nome:'Fábio Alves Ferreira',              email:'fabioalves@dfhenerg.com',         whats:'86998493940', cnpj:'40565505000118', razao:'DFH ENERGIA',                       consultor:'WALESKA ALMEIDA',  checkin:'NÃO' },
+  { id:11, nome:'Cláudio Barros',                    email:'claudio@barrosenerg.com',         whats:'86999597061', cnpj:'49619625000125', razao:'Barros Energia e Consultoria Ltda', consultor:'LEVI DA SILVA',    checkin:'NÃO' },
+  { id:12, nome:'Karina Borges',                     email:'kbsnutri@gmail.com',              whats:'86988101028', cnpj:'46633224000131', razao:'ACS ENERGY E CONSTRUÇÃO',           consultor:'DIANA PARENTE',    checkin:'NÃO' },
+  { id:13, nome:'Daiele de Sousa Viana',             email:'daielevs@gmail.com',              whats:'86998180592', cnpj:'45186617000181', razao:'Nossolar Engenharia',               consultor:'ITALO CHESLON',    checkin:'NÃO' },
+  { id:14, nome:'MANOEL FEITOSA COSTA NETO',         email:'manoelfcn@yahoo.com',             whats:'86988224333', cnpj:'34206019000100', razao:'MANOEL FEITOSA COSTA NETO',        consultor:'TALLYS LEAL',      checkin:'NÃO' },
+  { id:15, nome:'Samuel Ferreira de Sousa',          email:'terrasolar-the@hotmail.com',      whats:'86995360646', cnpj:'18254559000103', razao:'Samuel Ferreira de Sousa',          consultor:'ANDRÉ LUÍZ',      checkin:'NÃO' },
+];
+
+// ─── ESTADO ────────────────────────────────────────────────
+let app = {
+  usuario: null,
+  evento: null,
+  inscritos: [],
+};
+
+// ─── AUTENTICAÇÃO ──────────────────────────────────────────
+function login() {
+  // Em produção: substituir por OAuth Google real
+  app.usuario = 'consultor@souenergy.com.br';
+  document.getElementById('usuario-display').textContent = app.usuario;
+  const sid = localStorage.getItem('sou_sid');
+  if (sid) {
+    app.sheetsId = sid;
+    marcarConectado(sid);
+  }
+  mostrar('tela-eventos');
+  renderEventos();
+}
+
+function logout() {
+  app = { usuario: null, evento: null, inscritos: [] };
+  mostrar('tela-login');
+}
+
+// ─── NAVEGAÇÃO ─────────────────────────────────────────────
+function mostrar(id) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativa');
+}
+
+function voltar() {
+  mostrar('tela-eventos');
+  renderEventos();
+}
+
+// ─── SHEETS ────────────────────────────────────────────────
+function conectar() {
+  const v = document.getElementById('sheets-id').value.trim();
+  if (!v) return;
+  localStorage.setItem('sou_sid', v);
+  marcarConectado(v);
+  toast('Planilha conectada com sucesso!', 'ok');
+  renderEventos();
+}
+
+function marcarConectado(id) {
+  document.getElementById('config-area').innerHTML = `
+    <span class="badge-conectado">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Planilha conectada
+    </span>
+    <span style="font-size:11px;color:var(--texto-muted);font-family:monospace;">${id.slice(0,32)}…</span>
+    <button onclick="trocarPlanilha()" style="font-size:11px;color:var(--texto-muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit;">Trocar</button>`;
+}
+
+function trocarPlanilha() {
+  localStorage.removeItem('sou_sid');
+  document.getElementById('config-area').innerHTML = `
+    <p>Planilha Google Sheets:</p>
+    <input type="text" id="sheets-id" placeholder="Cole aqui o ID da planilha" />
+    <button class="btn-conectar" onclick="conectar()">Conectar</button>`;
+}
+
+// ─── EVENTOS ───────────────────────────────────────────────
+function parseData(str) {
+  // formato DD/MM/YYYY
+  const [d, m, a] = str.split('/');
+  return new Date(+a, +m - 1, +d);
+}
+
+function eventoEncerrado(dataStr) {
+  const dataEvento = parseData(dataStr);
+  const limite = new Date(dataEvento);
+  limite.setDate(limite.getDate() + 2); // D+2
+  limite.setHours(23, 59, 59, 999);
+  return new Date() > limite;
+}
+
+function renderEventos() {
+  const grid = document.getElementById('eventos-grid');
+  grid.innerHTML = EVENTOS.map(e => {
+    const encerrado = eventoEncerrado(e.data);
+    return `
+    <div class="evento-card${encerrado ? ' encerrado' : ''}" ${encerrado ? '' : `onclick="abrirEvento('${e.id}')"`}>
+      <p class="evento-cidade">${e.cidade}</p>
+      <p class="evento-uf">${e.uf} · ${e.regiao}</p>
+      <p class="evento-data">${e.data}</p>
+      <div class="evento-rodape">
+        ${encerrado
+          ? '<span class="badge-encerrado">Encerrado</span>'
+          : `<span class="badge-inscritos">${e.total.toLocaleString('pt-BR')} inscritos</span>`
+        }
+        ${!encerrado && e.presentes > 0 ? `<span class="badge-presentes">${e.presentes} presentes</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirEvento(id) {
+  app.evento = EVENTOS.find(e => e.id === id);
+  app.inscritos = JSON.parse(JSON.stringify(INSCRITOS_BASE));
+  document.getElementById('evento-header').textContent =
+    `Solarizando na Estrada — ${app.evento.cidade}/${app.evento.uf}`;
+  document.getElementById('busca').value = '';
+  mostrar('tela-checkin');
+  renderTabela(app.inscritos);
+  atualizarStats();
+}
+
+// ─── CHECKIN ───────────────────────────────────────────────
+function filtrar() {
+  const q = document.getElementById('busca').value.toLowerCase().trim();
+  if (!q) { renderTabela(app.inscritos); return; }
+  renderTabela(app.inscritos.filter(i =>
+    i.nome.toLowerCase().includes(q) ||
+    i.email.toLowerCase().includes(q) ||
+    i.cnpj.includes(q.replace(/\D/g,'')) ||
+    i.razao.toLowerCase().includes(q) ||
+    (i.consultor||'').toLowerCase().includes(q)
+  ));
+}
+
+function renderTabela(lista) {
+  const tb = document.getElementById('tbody');
+  if (!lista.length) {
+    tb.innerHTML = '<tr class="vazio"><td colspan="7">Nenhum inscrito encontrado para essa busca.</td></tr>';
+    return;
+  }
+  tb.innerHTML = lista.map(i => `
+    <tr class="${i.checkin==='SIM'?'presente':''}" id="r${i.id}">
+      <td class="nome">${i.nome}</td>
+      <td class="sec">${i.email}</td>
+      <td class="sec">${i.whats||'—'}</td>
+      <td class="sec">${fmtCNPJ(i.cnpj)}</td>
+      <td class="sec">${i.razao}</td>
+      <td class="sec">${i.consultor}</td>
+      <td class="check-cell">
+        <button class="check-btn ${i.checkin==='SIM'?'on':''}" onclick="toggle(${i.id})"
+          title="${i.checkin==='SIM'?'Desfazer check-in':'Confirmar presença'}">
+          <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function toggle(id) {
+  const i = app.inscritos.find(x => x.id === id);
+  if (!i) return;
+  i.checkin = i.checkin === 'SIM' ? 'NÃO' : 'SIM';
+  filtrar();
+  atualizarStats();
+  toast(i.checkin === 'SIM' ? `✓ Check-in confirmado: ${i.nome}` : `Check-in desfeito: ${i.nome}`,
+        i.checkin === 'SIM' ? 'ok' : '');
+  // TODO: gravar no Sheets via Apps Script
+}
+
+function atualizarStats() {
+  const total = app.inscritos.length;
+  const p = app.inscritos.filter(i => i.checkin === 'SIM').length;
+  const pct = total ? Math.round(p / total * 100) : 0;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><strong>${total.toLocaleString('pt-BR')}</strong>inscritos</div>
+    <div class="stat destaque"><strong>${p}</strong>presentes</div>
+    <div class="stat"><strong>${total - p}</strong>ausentes</div>
+    <div class="stat"><strong>${pct}%</strong>de presença</div>`;
+}
+
+// ─── MODAL ADICIONAR ───────────────────────────────────────
+function abrirModal() {
+  ['f-nome','f-email','f-whats','f-cnpj','f-razao'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal').classList.add('aberto');
+  setTimeout(() => document.getElementById('f-nome').focus(), 60);
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('aberto');
+}
+
+function mascaraCNPJ(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,14);
+  if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/,'$1.$2.$3/$4-$5');
+  else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})/,'$1.$2.$3/$4');
+  else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{0,3})/,'$1.$2.$3');
+  else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,3})/,'$1.$2');
+  el.value = v;
+}
+
+function salvar() {
+  const nome  = document.getElementById('f-nome').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const whats = document.getElementById('f-whats').value.trim();
+  const cnpj  = document.getElementById('f-cnpj').value.trim();
+  const razao = document.getElementById('f-razao').value.trim();
+  if (!nome || !email || !cnpj || !razao) {
+    toast('Preencha nome, e-mail, CNPJ e razão social.', 'err');
+    return;
+  }
+  const novo = {
+    id: Date.now(),
+    nome, email, whats,
+    cnpj: cnpj.replace(/\D/g,''), // grava só números → CNPJ_Integrador
+    razao,
+    consultor: (app.usuario || '').split('@')[0].toUpperCase(),
+    checkin: 'NÃO'
+  };
+  app.inscritos.push(novo);
+  fecharModal();
+  document.getElementById('busca').value = '';
+  renderTabela(app.inscritos);
+  atualizarStats();
+  toast(`${nome} adicionado com sucesso`, 'ok');
+  // TODO: gravar linha no Sheets via Apps Script
+}
+
+// ─── EXPORTAR CSV ──────────────────────────────────────────
+function exportar() {
+  const cab = ['ID_Evento','Nome_Evento','Cidade','Estado','Nome_Completo','E-mail',
+               'Contato_Whatsapp','CNPJ_Integrador','Razão_Social','Consultor','Checkin_Flag'];
+  const linhas = app.inscritos.map(i => [
+    app.evento.id, 'SOLARIZANDO NA ESTRADA',
+    app.evento.cidade, app.evento.uf,
+    i.nome, i.email, i.whats || '',
+    i.cnpj, i.razao, i.consultor, i.checkin
+  ]);
+  const csv = [cab, ...linhas].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `checkin_${app.evento.cidade}_${app.evento.data.replace(/\//g,'-')}.csv`;
+  a.click();
+  toast('CSV exportado com sucesso', 'ok');
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+function fmtCNPJ(v) {
+  const d = String(v || '').replace(/\D/g,'');
+  if (d.length !== 14) return v;
+  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+}
+
+function toast(msg, tipo = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (tipo ? ' ' + tipo : '');
+  t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ─── FECHAR MODAL AO CLICAR FORA ──────────────────────────
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) fecharModal();
+});
+</script>
+</body>
+</html>
